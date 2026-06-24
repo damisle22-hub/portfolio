@@ -196,6 +196,10 @@ const sounds = {
     playTone({ frequency: 392, endFrequency: 494, type: 'sine', duration: 0.6, volume: 0.08, delay: 0.2 });
   },
 
+    login: () => {
+    playTone({ frequency: 880, endFrequency: 1100, type: 'sine', duration: 0.10, volume: 0.10 });
+    playTone({ frequency: 1320, endFrequency: 1560, type: 'sine', duration: 0.12, volume: 0.07, delay: 0.08 });
+  },
   // Notification ping
   notify: () => {
     playTone({ frequency: 880, endFrequency: 1100, type: 'sine', duration: 0.08, volume: 0.12 });
@@ -312,6 +316,7 @@ function runBoot() {
       }
       if (progress >= 100) {
         clearInterval(interval);
+        
         setTimeout(() => {
           bootScreen.style.transition = 'opacity 0.5s ease';
           bootScreen.style.opacity = '0';
@@ -341,21 +346,40 @@ function refreshDesktop() {
 
 function restartSystem() {
   sounds.restart();
-  const overlay = document.createElement('div');
-  overlay.style.cssText = `position:fixed; inset:0; background:#000; z-index:99999; opacity:0; transition:opacity 0.5s;`;
-  document.body.appendChild(overlay);
-  setTimeout(() => { overlay.style.opacity = '1'; }, 10);
-  setTimeout(() => {
-    overlay.remove();
-    const desktop = document.getElementById('desktop');
-    desktop.classList.add('hidden');
-    runBios().then(() => runBoot()).then(() => {
-      desktop.classList.remove('hidden');
-      sounds.boot();
-    });
-  }, 600);
-}
 
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position:fixed;
+    inset:0;
+    background:#000;
+    z-index:99999;
+    opacity:0;
+    transition:opacity 0.5s;
+  `;
+
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    overlay.style.opacity = '1';
+  }, 10);
+
+  setTimeout(async () => {
+    overlay.remove();
+    await runStartupSequence();
+    
+  }, 650);
+}
+async function runStartupSequence() {
+  const desktop = document.getElementById('desktop');
+
+  desktop.classList.add('hidden');
+
+  await runBios();
+  await runBoot();
+  await showLoginScreen();
+
+  desktop.classList.remove('hidden');
+}
 function sleepSystem() {
   sounds.sleep();
   const sleepOverlay = document.createElement('div');
@@ -414,11 +438,13 @@ function shutDownSystem() {
   setTimeout(() => { overlay.style.opacity = '1'; }, 10);
   setTimeout(() => { msg.style.opacity = '1'; }, 900);
   setTimeout(() => { subMsg.style.opacity = '1'; }, 1400);
-  const restart = () => {
-    overlay.remove();
-    restartSystem();
-    document.removeEventListener('click', restart);
-  };
+  const restart = async () => {
+  overlay.remove();
+  document.removeEventListener('click', restart);
+
+  await runStartupSequence();
+  
+};
   setTimeout(() => { document.addEventListener('click', restart); }, 1500);
 }
 
@@ -1269,8 +1295,48 @@ async function init() {
   // Unlock audio and play boot chime on first interaction after desktop loads
   document.addEventListener('click', () => {
     if (!audioUnlocked) { audioUnlocked = true; }
-    sounds.boot();
+    
   }, { once: true });
+
+  initStarfield();
+  initIcons();
+  initWindowControls();
+  initWindowDrag();
+  initStartMenu();
+  initSelectionBox();
+
+  document.querySelectorAll('.window').forEach(win => makeResizable(win));
+}
+
+// ========== INIT ==========
+function showLoginScreen() {
+  return new Promise(resolve => {
+    const loginScreen = document.getElementById('login-screen');
+    const loginBtn = document.getElementById('login-btn');
+
+    loginScreen.classList.remove('hidden');
+    loginScreen.style.opacity = '1';
+
+    loginBtn.addEventListener('click', () => {
+      getAudioCtx();
+      audioUnlocked = true;
+
+     sounds.login();
+
+      loginScreen.style.transition = 'opacity 0.45s ease';
+      loginScreen.style.opacity = '0';
+
+      setTimeout(() => {
+      loginScreen.classList.add('hidden');
+      loginScreen.style.opacity = '';
+      resolve();
+      }, 450);
+    }, { once: true });
+  });
+}
+
+async function init() {
+  await runStartupSequence();
 
   initStarfield();
   initIcons();

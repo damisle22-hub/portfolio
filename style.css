@@ -54,6 +54,70 @@ html, body {
 .bios-ok { color: #00ff00; margin-left: 1rem; }
 .bios-warn { color: #ffff00; }
 
+/* ========== LOGIN SCREEN ========== */
+#login-screen {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, #101025 0%, #000000 70%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+}
+
+.login-card {
+  text-align: center;
+  color: #ffffff;
+  padding: 2rem;
+  width: 340px;
+}
+
+.login-avatar {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 8px;
+  border: 2px solid rgba(16,132,208,0.8);
+  box-shadow: 0 0 25px rgba(16,132,208,0.45);
+  margin-bottom: 1rem;
+}
+
+.login-name {
+  font-family: var(--font-retro);
+  font-size: 2.4rem;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.login-subtitle {
+  font-size: 0.8rem;
+  color: #8888aa;
+  margin-bottom: 1.5rem;
+}
+
+#login-btn {
+  background: linear-gradient(180deg, #1084d0, #000080);
+  color: #ffffff;
+  border: 1px solid rgba(16,132,208,0.8);
+  padding: 0.75rem 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(16,132,208,0.35);
+}
+
+#login-btn:hover {
+  filter: brightness(1.2);
+}
+
+.login-hint {
+  margin-top: 1rem;
+  font-size: 0.72rem;
+  color: #555577;
+}
+
 /* ========== BOOT SCREEN ========== */
 #boot-screen {
   position: fixed;
