@@ -42,6 +42,20 @@ style.textContent = `
   .resize-nw { top: -4px; left: -4px; width: 14px; height: 14px; cursor: nw-resize; }
   .resize-se { bottom: -4px; right: -4px; width: 14px; height: 14px; cursor: se-resize; }
   .resize-sw { bottom: -4px; left: -4px; width: 14px; height: 14px; cursor: sw-resize; }
+
+  #selection-box {
+    position: fixed;
+    border: 1px solid rgba(16,132,208,0.8);
+    background: rgba(16,132,208,0.1);
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+  }
+
+  .icon.selected {
+    background: rgba(0,0,128,0.5) !important;
+    border-color: rgba(255,255,255,0.5) !important;
+  }
 `;
 document.head.appendChild(style);
 
@@ -372,7 +386,7 @@ function sendToRecycleBin(icon) {
   if (icon.id === 'recycle-bin') return;
   const id = icon.dataset.window;
   const label = icon.querySelector('.icon-label').textContent;
-  const iconImg = icon.querySelector('.icon-img').textContent;
+  const iconImg = icon.querySelector('.icon-img').innerHTML;
   const left = icon.style.left;
   const top = icon.style.top;
 
@@ -381,7 +395,6 @@ function sendToRecycleBin(icon) {
 
   const binIconEl = document.getElementById('bin-icon');
   if (binIconEl) {
-    binIconEl.textContent = '🗑️';
     binIconEl.style.filter = 'sepia(1) saturate(3) hue-rotate(0deg)';
   }
   updateRecycleBinWindow();
@@ -399,7 +412,7 @@ function updateRecycleBinWindow() {
     if (emptyMsg) emptyMsg.style.display = 'block';
     if (binCount) binCount.textContent = '0 items';
     const binIconEl = document.getElementById('bin-icon');
-    if (binIconEl) { binIconEl.textContent = '🗑️'; binIconEl.style.filter = ''; }
+    if (binIconEl) { binIconEl.style.filter = ''; }
     return;
   }
 
@@ -417,7 +430,7 @@ function updateRecycleBinWindow() {
       cursor: default; transition: background 0.15s;
     `;
     row.innerHTML = `
-      <span style="font-size:1.4rem;">${item.iconImg}</span>
+      <span style="font-size:1.4rem;">📁</span>
       <span style="flex:1;">${item.label}</span>
       <span style="font-size:0.72rem; color:#888899;">Deleted</span>
     `;
@@ -458,31 +471,160 @@ function emptyRecycleBin() {
   }
 }
 
-// ========== DRAGGABLE ICONS ==========
+// ========== SELECTION BOX + MULTI-SELECT DRAG ==========
+const selectionBox = document.createElement('div');
+selectionBox.id = 'selection-box';
+document.body.appendChild(selectionBox);
+
+let isSelecting = false;
+let selStartX = 0, selStartY = 0;
+let isMultiDragging = false;
+let multiDragStartX = 0, multiDragStartY = 0;
+let iconStartPositions = new Map();
+
+function getSelectedIcons() {
+  return [...document.querySelectorAll('.icon.selected')];
+}
+
+function initSelectionBox() {
+  const desktop = document.getElementById('desktop');
+  let wasSelecting = false;
+
+  desktop.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.icon')) return;
+    if (e.target.closest('.window')) return;
+    if (e.target.closest('#taskbar')) return;
+    if (e.target.closest('#context-menu')) return;
+    if (e.target.closest('#sys-monitor')) return;
+    if (e.button !== 0) return;
+
+    isSelecting = true;
+    wasSelecting = false;
+    selStartX = e.clientX;
+    selStartY = e.clientY;
+
+    selectionBox.style.display = 'block';
+    selectionBox.style.left = selStartX + 'px';
+    selectionBox.style.top = selStartY + 'px';
+    selectionBox.style.width = '0px';
+    selectionBox.style.height = '0px';
+
+    if (!e.shiftKey && !e.metaKey && !e.ctrlKey) {
+      document.querySelectorAll('.icon').forEach(i => i.classList.remove('selected'));
+    }
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isSelecting) return;
+
+    const dx = Math.abs(e.clientX - selStartX);
+    const dy = Math.abs(e.clientY - selStartY);
+    if (dx > 4 || dy > 4) wasSelecting = true;
+
+    const x = Math.min(e.clientX, selStartX);
+    const y = Math.min(e.clientY, selStartY);
+    const w = Math.abs(e.clientX - selStartX);
+    const h = Math.abs(e.clientY - selStartY);
+
+    selectionBox.style.left = x + 'px';
+    selectionBox.style.top = y + 'px';
+    selectionBox.style.width = w + 'px';
+    selectionBox.style.height = h + 'px';
+
+    const selRect = { left: x, top: y, right: x + w, bottom: y + h };
+
+    document.querySelectorAll('.icon').forEach(icon => {
+      if (icon.style.display === 'none') return;
+      const r = icon.getBoundingClientRect();
+      const overlap =
+        r.left < selRect.right &&
+        r.right > selRect.left &&
+        r.top < selRect.bottom &&
+        r.bottom > selRect.top;
+      icon.classList.toggle('selected', overlap);
+    });
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isSelecting) {
+      isSelecting = false;
+      selectionBox.style.display = 'none';
+      selectionBox.style.width = '0';
+      selectionBox.style.height = '0';
+      // wasSelecting stays true so the click handler below knows not to deselect
+    }
+  });
+
+  // Deselect only on a plain click on empty desktop — NOT after a drag
+  desktop.addEventListener('click', (e) => {
+    if (e.target.closest('.icon')) return;
+    if (e.target.closest('.window')) return;
+    if (e.target.closest('#taskbar')) return;
+    if (e.target.closest('#sys-monitor')) return;
+    if (wasSelecting) {
+      wasSelecting = false;
+      return; // was a drag — keep selection
+    }
+    document.querySelectorAll('.icon').forEach(i => i.classList.remove('selected'));
+  });
+}
+
+// ========== DRAGGABLE ICONS (with multi-drag) ==========
 function makeIconDraggable(icon) {
   let dragging = false;
   let startX, startY, startLeft, startTop;
+  let hasMoved = false;
 
   icon.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     dragging = true;
+    hasMoved = false;
     startX = e.clientX;
     startY = e.clientY;
     startLeft = icon.offsetLeft;
     startTop = icon.offsetTop;
     icon.style.zIndex = 500;
     icon.dataset.dragging = 'true';
+
+    if (icon.classList.contains('selected')) {
+      const selected = getSelectedIcons();
+      if (selected.length > 1) {
+        isMultiDragging = true;
+        multiDragStartX = e.clientX;
+        multiDragStartY = e.clientY;
+        iconStartPositions.clear();
+        selected.forEach(ic => {
+          iconStartPositions.set(ic, { left: ic.offsetLeft, top: ic.offsetTop });
+          ic.style.zIndex = 500;
+        });
+      }
+    } else {
+      document.querySelectorAll('.icon').forEach(i => i.classList.remove('selected'));
+      isMultiDragging = false;
+    }
+
     e.stopPropagation();
   });
 
   document.addEventListener('mousemove', (e) => {
     if (!dragging) return;
+    hasMoved = true;
+
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-    icon.style.left = `${startLeft + dx}px`;
-    icon.style.top = `${startTop + dy}px`;
 
-    // Highlight bin if hovering over it while dragging
+    if (isMultiDragging) {
+      const mdx = e.clientX - multiDragStartX;
+      const mdy = e.clientY - multiDragStartY;
+      iconStartPositions.forEach((pos, ic) => {
+        ic.style.left = `${pos.left + mdx}px`;
+        ic.style.top = `${pos.top + mdy}px`;
+      });
+    } else {
+      icon.style.left = `${startLeft + dx}px`;
+      icon.style.top = `${startTop + dy}px`;
+    }
+
     const binIcon = document.getElementById('recycle-bin');
     if (binIcon && icon !== binIcon) {
       const binRect = binIcon.getBoundingClientRect();
@@ -504,10 +646,11 @@ function makeIconDraggable(icon) {
     dragging = false;
     icon.style.zIndex = '';
     icon.dataset.dragging = 'false';
+    isMultiDragging = false;
+    iconStartPositions.forEach((_, ic) => { ic.style.zIndex = ''; });
 
-    // Check if dropped on bin
     const binIcon = document.getElementById('recycle-bin');
-    if (binIcon && icon !== binIcon) {
+    if (binIcon && icon !== binIcon && hasMoved) {
       const binRect = binIcon.getBoundingClientRect();
       const overBin =
         e.clientX >= binRect.left && e.clientX <= binRect.right &&
@@ -515,7 +658,12 @@ function makeIconDraggable(icon) {
       if (overBin) {
         binIcon.style.background = '';
         binIcon.style.borderColor = '';
-        sendToRecycleBin(icon);
+        const selected = getSelectedIcons();
+        if (selected.length > 1) {
+          selected.forEach(ic => { if (ic.id !== 'recycle-bin') sendToRecycleBin(ic); });
+        } else {
+          sendToRecycleBin(icon);
+        }
       }
     }
   });
@@ -545,7 +693,15 @@ function initIcons() {
       if (moved) return;
       e.stopPropagation();
       clickCount++;
+
+      if (!e.shiftKey && !e.metaKey && !e.ctrlKey) {
+        if (!icon.classList.contains('selected')) {
+          document.querySelectorAll('.icon').forEach(i => i.classList.remove('selected'));
+        }
+      }
+
       icon.classList.add('selected');
+
       if (clickCount === 1) {
         clickTimer = setTimeout(() => { clickCount = 0; }, 400);
       } else if (clickCount >= 2) {
@@ -556,11 +712,7 @@ function initIcons() {
     });
   });
 
-  document.getElementById('desktop').addEventListener('click', (e) => {
-    if (!e.target.closest('.icon')) {
-      document.querySelectorAll('.icon').forEach(i => i.classList.remove('selected'));
-    }
-  });
+  
 }
 
 // ========== WINDOW CONTROLS ==========
@@ -720,6 +872,15 @@ document.getElementById('desktop').addEventListener('contextmenu', (e) => {
       ]);
       return;
     }
+    const selected = getSelectedIcons();
+    if (selected.length > 1 && icon.classList.contains('selected')) {
+      showContextMenu(e.clientX, e.clientY, [
+        { label: `📂 Open all selected`, action: () => selected.forEach(ic => openWindow(ic.dataset.window)) },
+        { label: 'separator' },
+        { label: '🗑️ Send all to Recycle Bin', action: () => selected.forEach(ic => { if (ic.id !== 'recycle-bin') sendToRecycleBin(ic); }) },
+      ]);
+      return;
+    }
     showContextMenu(e.clientX, e.clientY, [
       { label: `📂 Open ${windowTitles[id]}`, action: () => openWindow(id) },
       { label: 'separator' },
@@ -736,9 +897,8 @@ document.addEventListener('click', hideContextMenu);
 function arrangeIcons() {
   const icons = document.querySelectorAll('.icon');
   const startX = 20, startY = 20;
-  const icons2 = document.querySelectorAll('.icon');
   const availableHeight = window.innerHeight - 42 - startY;
-  const spacingY = Math.min(160, Math.floor(availableHeight / icons2.length));
+  const spacingY = Math.min(160, Math.floor(availableHeight / icons.length));
   icons.forEach((icon, i) => {
     icon.style.transition = 'top 0.3s ease, left 0.3s ease';
     icon.style.left = `${startX}px`;
@@ -911,6 +1071,7 @@ async function init() {
   initWindowControls();
   initWindowDrag();
   initStartMenu();
+  initSelectionBox();
 
   document.querySelectorAll('.window').forEach(win => makeResizable(win));
 }
