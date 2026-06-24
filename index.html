@@ -279,6 +279,11 @@
       <div class="window-statusbar"><span>3 objects</span><span>Ready</span></div>
     </div>
 
+    <div class="icon" id="recycle-bin" data-window="recyclebin">
+      <div class="icon-img" id="bin-icon">🗑️</div>
+      <div class="icon-label">Recycle Bin</div>
+    </div>
+
     <!-- CONTACT -->
     <div class="window hidden" id="win-contact" style="top:160px; left:240px;">
       <div class="window-titlebar">
@@ -359,6 +364,39 @@
     PROC <span id="sys-proc">0</span> active
   </div>
 </div>
+
+<!-- RECYCLE BIN -->
+<div class="window hidden" id="win-recyclebin" style="top:150px; left:200px;">
+  <div class="window-titlebar">
+    <div class="window-title"><span class="title-icon">🗑️</span> Recycle Bin</div>
+    <div class="window-controls">
+      <button class="win-btn minimize" data-target="win-recyclebin">_</button>
+      <button class="win-btn maximize" data-target="win-recyclebin">□</button>
+      <button class="win-btn close" data-target="win-recyclebin">✕</button>
+    </div>
+  </div>
+  <div class="window-menubar">
+    <span>File</span><span>Edit</span><span>View</span><span>Help</span>
+  </div>
+  <div class="window-body" id="recycle-bin-body">
+    <div id="recycle-empty-msg" style="
+      text-align:center;
+      padding: 3rem 1rem;
+      font-family:'Share Tech Mono',monospace;
+      font-size:0.9rem;
+      color:#888899;
+    ">
+      🗑️<br><br>Recycle Bin is empty
+    </div>
+    <div id="recycle-items" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+  </div>
+  <div class="window-statusbar">
+    <span id="bin-count">0 items</span>
+    <span id="bin-empty-btn" style="cursor:pointer; color:#cc0000;" onclick="emptyRecycleBin()">Empty Recycle Bin</span>
+  </div>
+</div>
+
+
     <!-- ========== TASKBAR ========== -->
     <div id="taskbar">
       <button id="start-btn"><span>🖥️</span> DI/OS</button>

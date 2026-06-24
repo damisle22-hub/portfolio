@@ -33,11 +33,7 @@ style.textContent = `
     box-shadow: 0 0 6px rgba(16,132,208,1);
   }
   #custom-cursor.clicking svg polygon { fill: #1084d0; }
-
-  .resize-handle {
-    position: absolute;
-    z-index: 10;
-  }
+  .resize-handle { position: absolute; z-index: 10; }
   .resize-n  { top: -4px; left: 8px; right: 8px; height: 8px; cursor: n-resize; }
   .resize-s  { bottom: -4px; left: 8px; right: 8px; height: 8px; cursor: s-resize; }
   .resize-e  { right: -4px; top: 8px; bottom: 8px; width: 8px; cursor: e-resize; }
@@ -213,11 +209,12 @@ const openWindows = {};
 const windowTitles = {
   about: 'About', skills: 'Skills', experience: 'Experience',
   projects: 'Projects', contact: 'Contact', resume: 'Resume.pdf',
+  recyclebin: 'Recycle Bin',
 };
 
 const windowIcons = {
   about: '📁', skills: '📁', experience: '📁',
-  projects: '📁', contact: '📁', resume: '📄',
+  projects: '📁', contact: '📁', resume: '📄', recyclebin: '🗑️',
 };
 
 function openWindow(id) {
@@ -343,11 +340,7 @@ function makeResizable(win) {
     if (!resizing) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-
-    if (resizeDir.includes('e')) {
-      win.style.width = Math.max(minW, startW + dx) + 'px';
-      win.style.maxWidth = 'none';
-    }
+    if (resizeDir.includes('e')) { win.style.width = Math.max(minW, startW + dx) + 'px'; win.style.maxWidth = 'none'; }
     if (resizeDir.includes('s')) {
       const newH = Math.max(minH, startH + dy);
       win.style.height = newH + 'px';
@@ -372,21 +365,113 @@ function makeResizable(win) {
   document.addEventListener('mouseup', () => { resizing = false; });
 }
 
+// ========== RECYCLE BIN ==========
+const recycleBin = [];
+
+function sendToRecycleBin(icon) {
+  if (icon.id === 'recycle-bin') return;
+  const id = icon.dataset.window;
+  const label = icon.querySelector('.icon-label').textContent;
+  const iconImg = icon.querySelector('.icon-img').textContent;
+  const left = icon.style.left;
+  const top = icon.style.top;
+
+  recycleBin.push({ id, label, iconImg, left, top, iconEl: icon });
+  icon.style.display = 'none';
+
+  const binIconEl = document.getElementById('bin-icon');
+  if (binIconEl) {
+    binIconEl.textContent = '🗑️';
+    binIconEl.style.filter = 'sepia(1) saturate(3) hue-rotate(0deg)';
+  }
+  updateRecycleBinWindow();
+}
+
+function updateRecycleBinWindow() {
+  const itemsEl = document.getElementById('recycle-items');
+  const emptyMsg = document.getElementById('recycle-empty-msg');
+  const binCount = document.getElementById('bin-count');
+  if (!itemsEl) return;
+
+  itemsEl.innerHTML = '';
+
+  if (recycleBin.length === 0) {
+    if (emptyMsg) emptyMsg.style.display = 'block';
+    if (binCount) binCount.textContent = '0 items';
+    const binIconEl = document.getElementById('bin-icon');
+    if (binIconEl) { binIconEl.textContent = '🗑️'; binIconEl.style.filter = ''; }
+    return;
+  }
+
+  if (emptyMsg) emptyMsg.style.display = 'none';
+  if (binCount) binCount.textContent = `${recycleBin.length} item${recycleBin.length > 1 ? 's' : ''}`;
+
+  recycleBin.forEach((item, index) => {
+    const row = document.createElement('div');
+    row.style.cssText = `
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.5rem 0.75rem; background: #ffffff;
+      border: 1px solid #d8d8e8; border-radius: 6px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.88rem; color: #1a1a3e;
+      cursor: default; transition: background 0.15s;
+    `;
+    row.innerHTML = `
+      <span style="font-size:1.4rem;">${item.iconImg}</span>
+      <span style="flex:1;">${item.label}</span>
+      <span style="font-size:0.72rem; color:#888899;">Deleted</span>
+    `;
+    row.addEventListener('mouseenter', () => row.style.background = '#eef2ff');
+    row.addEventListener('mouseleave', () => row.style.background = '#ffffff');
+    row.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showContextMenu(e.clientX, e.clientY, [
+        { label: '♻️ Restore', action: () => restoreFromBin(index) },
+        { label: 'separator' },
+        { label: '❌ Delete Permanently', action: () => {
+          recycleBin.splice(index, 1);
+          updateRecycleBinWindow();
+        }},
+      ]);
+    });
+    itemsEl.appendChild(row);
+  });
+}
+
+function restoreFromBin(index) {
+  const item = recycleBin[index];
+  const restoredCount = document.querySelectorAll('.icon[data-restored="true"]').length;
+  item.iconEl.style.display = 'flex';
+  item.iconEl.style.left = `${window.innerWidth - 160}px`;
+  item.iconEl.style.top = `${20 + restoredCount * 160}px`;
+  item.iconEl.dataset.restored = 'true';
+  recycleBin.splice(index, 1);
+  updateRecycleBinWindow();
+}
+
+function emptyRecycleBin() {
+  if (recycleBin.length === 0) return;
+  if (confirm('Permanently delete all items in the Recycle Bin?')) {
+    recycleBin.length = 0;
+    updateRecycleBinWindow();
+  }
+}
+
 // ========== DRAGGABLE ICONS ==========
 function makeIconDraggable(icon) {
   let dragging = false;
   let startX, startY, startLeft, startTop;
-  let hasMoved = false;
 
   icon.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     dragging = true;
-    hasMoved = false;
     startX = e.clientX;
     startY = e.clientY;
     startLeft = icon.offsetLeft;
     startTop = icon.offsetTop;
     icon.style.zIndex = 500;
+    icon.dataset.dragging = 'true';
     e.stopPropagation();
   });
 
@@ -394,13 +479,45 @@ function makeIconDraggable(icon) {
     if (!dragging) return;
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) hasMoved = true;
     icon.style.left = `${startLeft + dx}px`;
     icon.style.top = `${startTop + dy}px`;
+
+    // Highlight bin if hovering over it while dragging
+    const binIcon = document.getElementById('recycle-bin');
+    if (binIcon && icon !== binIcon) {
+      const binRect = binIcon.getBoundingClientRect();
+      const overBin =
+        e.clientX >= binRect.left && e.clientX <= binRect.right &&
+        e.clientY >= binRect.top  && e.clientY <= binRect.bottom;
+      if (overBin) {
+        binIcon.style.background = 'rgba(200,0,0,0.25)';
+        binIcon.style.borderColor = 'rgba(200,0,0,0.6)';
+      } else {
+        binIcon.style.background = '';
+        binIcon.style.borderColor = '';
+      }
+    }
   });
 
-  document.addEventListener('mouseup', () => {
-    if (dragging) { dragging = false; icon.style.zIndex = ''; }
+  document.addEventListener('mouseup', (e) => {
+    if (!dragging) return;
+    dragging = false;
+    icon.style.zIndex = '';
+    icon.dataset.dragging = 'false';
+
+    // Check if dropped on bin
+    const binIcon = document.getElementById('recycle-bin');
+    if (binIcon && icon !== binIcon) {
+      const binRect = binIcon.getBoundingClientRect();
+      const overBin =
+        e.clientX >= binRect.left && e.clientX <= binRect.right &&
+        e.clientY >= binRect.top  && e.clientY <= binRect.bottom;
+      if (overBin) {
+        binIcon.style.background = '';
+        binIcon.style.borderColor = '';
+        sendToRecycleBin(icon);
+      }
+    }
   });
 }
 
@@ -459,9 +576,7 @@ function initWindowControls() {
       const win = document.getElementById(btn.dataset.target);
       if (!win) return;
       const body = win.querySelector('.window-body');
-
       if (win.dataset.maximized === 'true') {
-        // Restore
         win.style.width = win.dataset.prevWidth || '820px';
         win.style.height = win.dataset.prevHeight || 'auto';
         win.style.top = win.dataset.prevTop || '80px';
@@ -471,7 +586,6 @@ function initWindowControls() {
         if (body) body.style.maxHeight = '620px';
         win.dataset.maximized = 'false';
       } else {
-        // Maximize — full screen minus taskbar
         win.dataset.prevWidth = win.style.width || '820px';
         win.dataset.prevHeight = win.style.height || '';
         win.dataset.prevTop = win.style.top || '80px';
@@ -596,11 +710,19 @@ document.getElementById('desktop').addEventListener('contextmenu', (e) => {
   if (e.target.closest('.icon')) {
     const icon = e.target.closest('.icon');
     const id = icon.dataset.window;
+    if (id === 'recyclebin') {
+      showContextMenu(e.clientX, e.clientY, [
+        { label: '🗑️ Open Recycle Bin', action: () => openWindow('recyclebin') },
+        { label: 'separator' },
+        { label: '💥 Empty Recycle Bin', action: () => emptyRecycleBin() },
+      ]);
+      return;
+    }
     showContextMenu(e.clientX, e.clientY, [
       { label: `📂 Open ${windowTitles[id]}`, action: () => openWindow(id) },
       { label: 'separator' },
       { label: '✏️ Rename', action: () => renameIcon(icon) },
-      { label: '🗑️ Remove', action: () => icon.remove() },
+      { label: '🗑️ Send to Recycle Bin', action: () => sendToRecycleBin(icon) },
     ]);
     return;
   }
@@ -691,6 +813,86 @@ function initStartMenu() {
   });
 }
 
+// ========== SYSTEM MONITOR ==========
+const sysState = {
+  cpu: 3, ram: 8, pwr: 100,
+  uptimeSeconds: 0, activitySpike: 0,
+};
+
+let lastMouseX = 0, lastMouseY = 0, mouseVelocity = 0;
+document.addEventListener('mousemove', (e) => {
+  const dx = e.clientX - lastMouseX;
+  const dy = e.clientY - lastMouseY;
+  mouseVelocity = Math.sqrt(dx * dx + dy * dy);
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+});
+
+function updateSysMonitor() {
+  const openCount = Object.keys(openWindows).filter(k => openWindows[k] !== 'minimized').length;
+  const baseCpu = 3 + openCount * 3;
+  const mouseCpu = Math.min(75, mouseVelocity * 3.5);
+  const noise = Math.random() * 12 - 6;
+  const targetCpu = Math.min(99, baseCpu + mouseCpu + sysState.activitySpike + noise);
+  sysState.cpu += (targetCpu - sysState.cpu) * 0.45;
+  sysState.activitySpike *= 0.78;
+  mouseVelocity *= 0.4;
+
+  const targetRam = Math.min(97, 10 + openCount * 12 + Math.random() * 5 - 2);
+  sysState.ram += (targetRam - sysState.ram) * 0.3;
+
+  const drainRate = 0.004 + openCount * 0.001 + (sysState.cpu / 100) * 0.008;
+  sysState.pwr = Math.max(0, sysState.pwr - drainRate);
+
+  const pwrBar = document.getElementById('pwr-bar');
+  if (pwrBar) {
+    if (sysState.pwr < 20) {
+      pwrBar.style.background = 'linear-gradient(90deg, #aa0000, #ff4444)';
+      pwrBar.style.boxShadow = '0 0 6px rgba(255,50,50,0.7)';
+    } else if (sysState.pwr < 50) {
+      pwrBar.style.background = 'linear-gradient(90deg, #aa6600, #ffaa00)';
+      pwrBar.style.boxShadow = '0 0 6px rgba(255,170,0,0.5)';
+    } else {
+      pwrBar.style.background = 'linear-gradient(90deg, #00aa44, #00ff66)';
+      pwrBar.style.boxShadow = '0 0 6px rgba(0,255,100,0.4)';
+    }
+  }
+
+  const cpuPct = Math.round(Math.max(0, Math.min(100, sysState.cpu)));
+  const ramPct = Math.round(Math.max(0, Math.min(100, sysState.ram)));
+  const pwrPct = Math.round(sysState.pwr);
+
+  const cpuBar = document.getElementById('cpu-bar');
+  const ramBar = document.getElementById('ram-bar');
+  const cpuVal = document.getElementById('cpu-val');
+  const ramVal = document.getElementById('ram-val');
+  const pwrVal = document.getElementById('pwr-val');
+  const sysProc = document.getElementById('sys-proc');
+
+  if (cpuBar) cpuBar.style.width = cpuPct + '%';
+  if (ramBar) ramBar.style.width = ramPct + '%';
+  if (pwrBar) pwrBar.style.width = pwrPct + '%';
+  if (cpuVal) {
+    cpuVal.textContent = cpuPct + '%';
+    cpuVal.style.color = cpuPct > 70 ? '#ff4444' : cpuPct > 40 ? '#ffaa00' : '#1084d0';
+  }
+  if (ramVal) ramVal.textContent = ramPct + '%';
+  if (pwrVal) pwrVal.textContent = pwrPct + '%';
+  if (sysProc) sysProc.textContent = openCount;
+}
+
+function updateUptime() {
+  sysState.uptimeSeconds++;
+  const h = Math.floor(sysState.uptimeSeconds / 3600).toString().padStart(2, '0');
+  const m = Math.floor((sysState.uptimeSeconds % 3600) / 60).toString().padStart(2, '0');
+  const s = (sysState.uptimeSeconds % 60).toString().padStart(2, '0');
+  const el = document.getElementById('sys-uptime');
+  if (el) el.textContent = `${h}:${m}:${s}`;
+}
+
+setInterval(updateSysMonitor, 80);
+setInterval(updateUptime, 1000);
+
 // ========== INIT ==========
 async function init() {
   await runBios();
@@ -705,111 +907,7 @@ async function init() {
   initWindowDrag();
   initStartMenu();
 
-  // Make all existing windows resizable
   document.querySelectorAll('.window').forEach(win => makeResizable(win));
 }
-// ========== SYSTEM MONITOR ==========
-const sysState = {
-  cpu: 3,
-  ram: 8,
-  pwr: 100,
-  uptimeSeconds: 0,
-  dragging: false,
-  dragIntensity: 0,
-  activitySpike: 0,
-};
-
-// Track mouse movement intensity
-let lastMouseX = 0, lastMouseY = 0, mouseVelocity = 0;
-document.addEventListener('mousemove', (e) => {
-  const dx = e.clientX - lastMouseX;
-  const dy = e.clientY - lastMouseY;
-  mouseVelocity = Math.sqrt(dx * dx + dy * dy);
-  lastMouseX = e.clientX;
-  lastMouseY = e.clientY;
-});
-
-// Spike CPU when window opens
-const originalOpenWindow = openWindow;
-window.openWindowWithSpike = function(id) {
-  sysState.activitySpike = Math.random() * 65 + 50;
-  sysState.ram = Math.min(95, sysState.ram + Math.random() * 15 + 8);
-  openWindow(id);
-};
-
-// Spike when window closes
-const originalCloseWindow = closeWindow;
-window.closeWindowWithSpike = function(id) {
-  sysState.activitySpike = Math.random() * 35 + 20;
-  sysState.ram = Math.max(8, sysState.ram - Math.random() * 14 - 6);
-  closeWindow(id);
-};
-
-function updateSysMonitor() {
-  const openCount = Object.keys(openWindows).filter(k => openWindows[k] !== 'minimized').length;
-
-  // CPU — based on mouse velocity, open windows, and spikes
-  const baseCpu = 3 + openCount * 3;
-    const mouseCpu = Math.min(75, mouseVelocity * 3.5);
-    const spikeCpu = sysState.activitySpike;
-    const noise = Math.random() * 12 - 6;
-    const targetCpu = Math.min(99, baseCpu + mouseCpu + spikeCpu + noise);
-
-    sysState.cpu += (targetCpu - sysState.cpu) * 0.45;
-    sysState.activitySpike *= 0.78;
-    mouseVelocity *= 0.4;
-
-// RAM — based on open windows
-    const targetRam = Math.min(97, 10 + openCount * 12 + Math.random() * 5 - 2);
-    sysState.ram += (targetRam - sysState.ram) * 0.3;
-
-  // Power — slowly drains, faster with more activity
-  const drainRate = 0.004 + openCount * 0.001 + (sysState.cpu / 100) * 0.008;
-  sysState.pwr = Math.max(0, sysState.pwr - drainRate);
-
-  // Color-code power bar
-  const pwrBar = document.getElementById('pwr-bar');
-  if (sysState.pwr < 20) {
-    pwrBar.style.background = 'linear-gradient(90deg, #aa0000, #ff4444)';
-    pwrBar.style.boxShadow = '0 0 6px rgba(255,50,50,0.7)';
-  } else if (sysState.pwr < 50) {
-    pwrBar.style.background = 'linear-gradient(90deg, #aa6600, #ffaa00)';
-    pwrBar.style.boxShadow = '0 0 6px rgba(255,170,0,0.5)';
-  } else {
-    pwrBar.style.background = 'linear-gradient(90deg, #00aa44, #00ff66)';
-    pwrBar.style.boxShadow = '0 0 6px rgba(0,255,100,0.4)';
-  }
-
-  // Update DOM
-  const cpuPct = Math.round(Math.max(0, Math.min(100, sysState.cpu)));
-  const ramPct = Math.round(Math.max(0, Math.min(100, sysState.ram)));
-  const pwrPct = Math.round(sysState.pwr);
-
-  document.getElementById('cpu-bar').style.width = cpuPct + '%';
-  document.getElementById('ram-bar').style.width = ramPct + '%';
-  document.getElementById('pwr-bar').style.width = pwrPct + '%';
-  document.getElementById('cpu-val').textContent = cpuPct + '%';
-  document.getElementById('ram-val').textContent = ramPct + '%';
-  document.getElementById('pwr-val').textContent = pwrPct + '%';
-  document.getElementById('sys-proc').textContent = openCount;
-
-  // CPU val color
-  const cpuVal = document.getElementById('cpu-val');
-  if (cpuPct > 70) cpuVal.style.color = '#ff4444';
-  else if (cpuPct > 40) cpuVal.style.color = '#ffaa00';
-  else cpuVal.style.color = '#1084d0';
-}
-
-// Uptime counter
-function updateUptime() {
-  sysState.uptimeSeconds++;
-  const h = Math.floor(sysState.uptimeSeconds / 3600).toString().padStart(2, '0');
-  const m = Math.floor((sysState.uptimeSeconds % 3600) / 60).toString().padStart(2, '0');
-  const s = (sysState.uptimeSeconds % 60).toString().padStart(2, '0');
-  document.getElementById('sys-uptime').textContent = `${h}:${m}:${s}`;
-}
-
-setInterval(updateSysMonitor, 80);
-setInterval(updateUptime, 1000);
 
 init();
