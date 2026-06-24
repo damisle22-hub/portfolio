@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DI/OS v1.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ========== BOOT SCREEN ========== -->
+  <div id="boot-screen">
+    <div class="boot-content">
+      <div class="boot-logo">DI/OS</div>
+      <div class="boot-version">Version 1.0</div>
+      <div class="boot-author">Daiyan Islam</div>
+      <div class="boot-bar-wrap">
+        <div class="boot-bar-fill" id="boot-fill"></div>
+        <div class="boot-bar-segments">
+          <div class="boot-bar-segment"></div><div class="boot-bar-segment"></div>
+          <div class="boot-bar-segment"></div><div class="boot-bar-segment"></div>
+          <div class="boot-bar-segment"></div><div class="boot-bar-segment"></div>
+          <div class="boot-bar-segment"></div><div class="boot-bar-segment"></div>
+          <div class="boot-bar-segment"></div><div class="boot-bar-segment"></div>
+        </div>
+      </div>
+      <div class="boot-msg" id="boot-msg">Initializing system...</div>
+      <div class="boot-percent" id="boot-percent">0%</div>
+    </div>
+  </div>
+
+  <!-- ========== DESKTOP ========== -->
+  <div id="desktop" class="hidden">
+
+    <!-- Starfield -->
+    <canvas id="starfield"></canvas>
+
+    <!-- CRT + Scanlines -->
+    <div class="crt-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- Desktop Icons -->
+    <div class="desktop-icons">
+
+      <div class="icon" data-window="about">
+        <div class="icon-img">📁</div>
+        <div class="icon-label">About.exe</div>
+      </div>
+
+      <div class="icon" data-window="skills">
+        <div class="icon-img">📁</div>
+        <div class="icon-label">Skills.exe</div>
+      </div>
+
+      <div class="icon" data-window="experience">
+        <div class="icon-img">📁</div>
+        <div class="icon-label">Experience.exe</div>
+      </div>
+
+      <div class="icon" data-window="projects">
+        <div class="icon-img">📁</div>
+        <div class="icon-label">Projects.exe</div>
+      </div>
+
+      <div class="icon" data-window="contact">
+        <div class="icon-img">📁</div>
+        <div class="icon-label">Contact.exe</div>
+      </div>
+
+      <div class="icon" data-window="resume">
+        <div class="icon-img">📄</div>
+        <div class="icon-label">Resume.pdf</div>
+      </div>
+
+    </div>
+
+    <!-- ========== WINDOWS ========== -->
+
+    <!-- ABOUT -->
+    <div class="window hidden" id="win-about" style="top:80px; left:160px;">
+      <div class="window-titlebar">
+        <div class="window-title"><span class="title-icon">📁</span> About — Daiyan Islam</div>
+        <div class="window-controls">
+          <button class="win-btn minimize" data-target="win-about">_</button>
+          <button class="win-btn maximize" data-target="win-about">□</button>
+          <button class="win-btn close" data-target="win-about">✕</button>
+        </div>
+      </div>
+      <div class="window-menubar">
+        <span>File</span><span>Edit</span><span>View</span><span>Help</span>
+      </div>
+      <div class="window-body">
+        <div class="about-layout">
+          <div class="about-avatar">
+            <img src="assets/profile.jpg" alt="Daiyan Islam" />
+          </div>
+          <div class="about-info">
+            <p class="about-name">Daiyan Islam</p>
+            <p class="about-role">> EE Student @ McGill University</p>
+            <p class="about-role">> Technology Risk Consultant @ EY</p>
+            <p class="about-role">> Based in Montreal, QC</p>
+            <p class="about-role">> Bilingual: English / French</p>
+            <div class="about-divider"></div>
+            <p class="about-bio">Electrical Engineering student bridging software development, AI applications, and technology risk — with hands-on experience across all three domains simultaneously.</p>
+            <p class="about-bio">Long-term focus on cybersecurity for embedded and cyber-physical systems.</p>
+            <div class="about-tags">
+              <span class="retro-tag">McGill EE</span>
+              <span class="retro-tag">EY Consulting</span>
+              <span class="retro-tag">Salesforce PD1</span>
+              <span class="retro-tag">Bilingual EN/FR</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="window-statusbar"><span>4 items</span><span>Ready</span></div>
+    </div>
+
+    <!-- SKILLS -->
+    <div class="window hidden" id="win-skills" style="top:100px; left:180px;">
+      <div class="window-titlebar">
+        <div class="window-title"><span class="title-icon">📁</span> Skills</div>
+        <div class="window-controls">
+          <button class="win-btn minimize" data-target="win-skills">_</button>
+          <button class="win-btn maximize" data-target="win-skills">□</button>
+          <button class="win-btn close" data-target="win-skills">✕</button>
+        </div>
+      </div>
+      <div class="window-menubar">
+        <span>File</span><span>Edit</span><span>View</span><span>Help</span>
+      </div>
+      <div class="window-body">
+        <div class="skills-grid-retro">
+          <div class="skill-folder">
+            <div class="skill-folder-icon">💻</div>
+            <div class="skill-folder-name">Languages</div>
+            <div class="skill-folder-content">Python · JavaScript · TypeScript · Java · SQL · C · Assembly</div>
+          </div>
+          <div class="skill-folder">
+            <div class="skill-folder-icon">⚛️</div>
+            <div class="skill-folder-name">Frameworks</div>
+            <div class="skill-folder-content">ReactJS · NodeJS · REST APIs · Docker · Supabase · Git</div>
+          </div>
+          <div class="skill-folder">
+            <div class="skill-folder-icon">🛠️</div>
+            <div class="skill-folder-name">Platforms</div>
+            <div class="skill-folder-content">Salesforce PD1 · Power BI · Tableau · Figma · Jira</div>
+          </div>
+          <div class="skill-folder">
+            <div class="skill-folder-icon">🛡️</div>
+            <div class="skill-folder-name">Risk & Data</div>
+            <div class="skill-folder-content">NIST · ISO 27001 · COBIT · SOX/ITGC · Anomaly Detection</div>
+          </div>
+        </div>
+      </div>
+      <div class="window-statusbar"><span>4 objects</span><span>Ready</span></div>
+    </div>
+
+    <!-- EXPERIENCE -->
+    <div class="window hidden" id="win-experience" style="top:120px; left:200px;">
+      <div class="window-titlebar">
+        <div class="window-title"><span class="title-icon">📁</span> Experience</div>
+        <div class="window-controls">
+          <button class="win-btn minimize" data-target="win-experience">_</button>
+          <button class="win-btn maximize" data-target="win-experience">□</button>
+          <button class="win-btn close" data-target="win-experience">✕</button>
+        </div>
+      </div>
+      <div class="window-menubar">
+        <span>File</span><span>Edit</span><span>View</span><span>Help</span>
+      </div>
+      <div class="window-body">
+        <div class="exp-list">
+          <div class="exp-item">
+            <div class="exp-header">
+              <span class="exp-icon">💼</span>
+              <div>
+                <div class="exp-title">Technology Risk Consultant</div>
+                <div class="exp-org">Ernst & Young (EY) — Montreal, QC</div>
+              </div>
+              <div class="exp-date">05/2025 — Present</div>
+            </div>
+            <div class="exp-body">IT risk and control assessments using NIST, ISO 27001, and COBIT — identifying 50+ control deficiencies and reducing audit exceptions by 10%. Built Python/SQL scripts for automated data validation cutting manual testing by 20%.</div>
+          </div>
+          <div class="exp-divider"></div>
+          <div class="exp-item">
+            <div class="exp-header">
+              <span class="exp-icon">⚙️</span>
+              <div>
+                <div class="exp-title">Systems Engineering Intern</div>
+                <div class="exp-org">Trane Technologies — Montreal, QC</div>
+              </div>
+              <div class="exp-date">05/2024 — 08/2024</div>
+            </div>
+            <div class="exp-body">Engineered 40+ HVAC applications using Python, REST APIs, and data modeling — achieving 15% energy efficiency improvement. Built Salesforce solutions for 15+ client projects with 100% on-time delivery.</div>
+          </div>
+          <div class="exp-divider"></div>
+          <div class="exp-item">
+            <div class="exp-header">
+              <span class="exp-icon">🤖</span>
+              <div>
+                <div class="exp-title">Software Consulting Intern</div>
+                <div class="exp-org">ARVO A.I. — Montreal, QC</div>
+              </div>
+              <div class="exp-date">01/2024 — 04/2024</div>
+            </div>
+            <div class="exp-body">Reduced GPT API response times by 2s and improved front-end performance 10% via TypeScript refactoring. Built production-ready ReactJS interfaces across 3 AI/CRM integration projects.</div>
+          </div>
+          <div class="exp-divider"></div>
+          <div class="exp-item">
+            <div class="exp-header">
+              <span class="exp-icon">🏗️</span>
+              <div>
+                <div class="exp-title">Project Management Intern</div>
+                <div class="exp-org">ARCO/Murray — Chicago, IL</div>
+              </div>
+              <div class="exp-date">05/2023 — 08/2023</div>
+            </div>
+            <div class="exp-body">Supported management of a $150M construction project. Built interactive dashboards using ReactJS, TypeScript, Power BI, and Excel for real-time project tracking.</div>
+          </div>
+        </div>
+      </div>
+      <div class="window-statusbar"><span>4 objects</span><span>Ready</span></div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="window hidden" id="win-projects" style="top:140px; left:220px;">
+      <div class="window-titlebar">
+        <div class="window-title"><span class="title-icon">📁</span> Projects</div>
+        <div class="window-controls">
+          <button class="win-btn minimize" data-target="win-projects">_</button>
+          <button class="win-btn maximize" data-target="win-projects">□</button>
+          <button class="win-btn close" data-target="win-projects">✕</button>
+        </div>
+      </div>
+      <div class="window-menubar">
+        <span>File</span><span>Edit</span><span>View</span><span>Help</span>
+      </div>
+      <div class="window-body">
+        <div class="projects-retro">
+          <div class="project-retro-item">
+            <div class="project-retro-header">
+              <span>📄</span>
+              <div class="project-retro-title">CleverCut — Smart Hair Clippers</div>
+              <span class="project-retro-tag">Hardware · UWB · IMU</span>
+            </div>
+            <div class="project-retro-body">Designed a smart clipper prototype using UWB and IMU sensors for 3D head mapping and precision trimming. Integrated sensors with control logic for stable blade positioning.</div>
+            <div class="project-retro-stack">
+              <span>C</span><span>UWB</span><span>IMU</span><span>3D Mapping</span>
+            </div>
+          </div>
+          <div class="exp-divider"></div>
+          <div class="project-retro-item">
+            <div class="project-retro-header">
+              <span>📄</span>
+              <div class="project-retro-title">The Fact Journal</div>
+              <span class="project-retro-tag">Full-Stack · Hackathon</span>
+            </div>
+            <div class="project-retro-body">McGill Hackathon — full-stack web app for recording facts, attaching sources, and evaluating credibility using Supabase for real-time database and auth.</div>
+            <div class="project-retro-stack">
+              <span>HTML/CSS/JS</span><span>Supabase</span><span>API</span>
+            </div>
+          </div>
+          <div class="exp-divider"></div>
+          <div class="project-retro-item">
+            <div class="project-retro-header">
+              <span>📄</span>
+              <div class="project-retro-title">ARCO/Murray Capstone</div>
+              <span class="project-retro-tag">Python · Data Viz</span>
+            </div>
+            <div class="project-retro-body">Award-winning Python mapping and cost-analysis tool for comparing government subsidies. Designed UI in Figma, implemented data processing and visualization features.</div>
+            <div class="project-retro-stack">
+              <span>Python</span><span>Figma</span><span>Data Viz</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="window-statusbar"><span>3 objects</span><span>Ready</span></div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="window hidden" id="win-contact" style="top:160px; left:240px;">
+      <div class="window-titlebar">
+        <div class="window-title"><span class="title-icon">📁</span> Contact</div>
+        <div class="window-controls">
+          <button class="win-btn minimize" data-target="win-contact">_</button>
+          <button class="win-btn maximize" data-target="win-contact">□</button>
+          <button class="win-btn close" data-target="win-contact">✕</button>
+        </div>
+      </div>
+      <div class="window-menubar">
+        <span>File</span><span>Edit</span><span>View</span><span>Help</span>
+      </div>
+      <div class="window-body contact-body">
+        <p class="contact-line">> Let's build something together.</p>
+        <div class="contact-links">
+          <a href="mailto:m.islam@mail.mcgill.ca" class="contact-link"><span>📧</span> m.islam@mail.mcgill.ca</a>
+          <a href="https://www.linkedin.com/in/daiyan-islam/" target="_blank" class="contact-link"><span>🔗</span> linkedin.com/in/daiyan-islam</a>
+          <a href="https://github.com/damisle22-hub" target="_blank" class="contact-link"><span>🐙</span> GitHub</a>
+        </div>
+      </div>
+      <div class="window-statusbar"><span>3 items</span><span>Ready</span></div>
+    </div>
+
+    <!-- RESUME -->
+    <div class="window hidden" id="win-resume" style="top:180px; left:260px;">
+      <div class="window-titlebar">
+        <div class="window-title"><span class="title-icon">📄</span> Resume.pdf</div>
+        <div class="window-controls">
+          <button class="win-btn minimize" data-target="win-resume">_</button>
+          <button class="win-btn maximize" data-target="win-resume">□</button>
+          <button class="win-btn close" data-target="win-resume">✕</button>
+        </div>
+      </div>
+      <div class="window-menubar">
+        <span>File</span><span>Edit</span><span>View</span><span>Help</span>
+      </div>
+      <div class="window-body contact-body">
+        <p class="contact-line">> Resume — Daiyan Islam</p>
+        <p class="about-bio" style="margin-top:1rem;">Click below to download or view the full resume.</p>
+        <div class="contact-links" style="margin-top:1.5rem;">
+          <a href="assets/resume.pdf" download = "Daiyan_Islam_Resume.pdf"target="_blank" class="contact-link"><span>📄</span> Download Resume.pdf</a>
+        </div>
+      </div>
+      <div class="window-statusbar"><span>1 item</span><span>Ready</span></div>
+    </div>
+<!-- ========== SYSTEM MONITOR ========== -->
+<div id="sys-monitor">
+  <div class="sys-title">
+    <span>⚙️</span> SYS MONITOR
+  </div>
+  <div class="sys-row">
+    <span class="sys-label">CPU</span>
+    <div class="sys-bar-wrap">
+      <div class="sys-bar" id="cpu-bar"></div>
+    </div>
+    <span class="sys-val" id="cpu-val">0%</span>
+  </div>
+  <div class="sys-row">
+    <span class="sys-label">RAM</span>
+    <div class="sys-bar-wrap">
+      <div class="sys-bar ram" id="ram-bar"></div>
+    </div>
+    <span class="sys-val" id="ram-val">0%</span>
+  </div>
+  <div class="sys-row">
+    <span class="sys-label">PWR</span>
+    <div class="sys-bar-wrap">
+      <div class="sys-bar pwr" id="pwr-bar" style="width:100%"></div>
+    </div>
+    <span class="sys-val" id="pwr-val">100%</span>
+  </div>
+  <div class="sys-divider"></div>
+  <div class="sys-uptime">
+    UPTIME <span id="sys-uptime">00:00:00</span>
+  </div>
+  <div class="sys-uptime" style="margin-top:0.2rem;">
+    PROC <span id="sys-proc">0</span> active
+  </div>
+</div>
+    <!-- ========== TASKBAR ========== -->
+    <div id="taskbar">
+      <button id="start-btn"><span>🖥️</span> DI/OS</button>
+      <div class="taskbar-divider"></div>
+      <div class="taskbar-windows" id="taskbar-windows"></div>
+      <div class="taskbar-clock" id="taskbar-clock"></div>
+    </div>
+
+    <!-- Start Menu -->
+    <div id="start-menu" class="hidden">
+      <div class="start-menu-header">
+        <img src="assets/profile.jpg" alt="Daiyan" class="start-avatar" />
+        <div>
+          <div class="start-name">Daiyan Islam</div>
+          <div class="start-role">EE Student · EY Consultant</div>
+        </div>
+      </div>
+      <div class="start-menu-items">
+        <div class="start-item" data-window="about">📁 About</div>
+        <div class="start-item" data-window="skills">📁 Skills</div>
+        <div class="start-item" data-window="experience">📁 Experience</div>
+        <div class="start-item" data-window="projects">📁 Projects</div>
+        <div class="start-item" data-window="contact">📁 Contact</div>
+        <div class="start-item" data-window="resume">📄 Resume</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
