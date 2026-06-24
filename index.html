@@ -45,32 +45,44 @@
     <div class="desktop-icons">
 
       <div class="icon" data-window="about">
-        <div class="icon-img">📁</div>
+        <div class="icon-img">
+          <img src="assets/folder.png" alt="folder" width="80" height="80" style="object-fit:contain; transform:scale(1.6)">
+        </div>
         <div class="icon-label">About.exe</div>
       </div>
 
       <div class="icon" data-window="skills">
-        <div class="icon-img">📁</div>
+        <div class="icon-img">
+          <img src="assets/folder.png" alt="folder" width="80" height="80" style="object-fit:contain; transform:scale(1.6)">
+        </div>
         <div class="icon-label">Skills.exe</div>
       </div>
 
       <div class="icon" data-window="experience">
-        <div class="icon-img">📁</div>
+        <div class="icon-img">
+          <img src="assets/folder.png" alt="folder" width="80" height="80" style="object-fit:contain; transform:scale(1.6)">
+        </div>
         <div class="icon-label">Experience.exe</div>
       </div>
 
       <div class="icon" data-window="projects">
-        <div class="icon-img">📁</div>
+        <div class="icon-img">
+          <img src="assets/folder.png" alt="folder" width="80" height="80" style="object-fit:contain; transform:scale(1.6)">
+        </div>
         <div class="icon-label">Projects.exe</div>
       </div>
 
       <div class="icon" data-window="contact">
-        <div class="icon-img">📁</div>
+        <div class="icon-img">
+          <img src="assets/folder.png" alt="folder" width="80" height="80" style="object-fit:contain;transform:scale(1.6)">
+        </div>
         <div class="icon-label">Contact.exe</div>
       </div>
 
       <div class="icon" data-window="resume">
-        <div class="icon-img">📄</div>
+        <div class="icon-img">
+          <img src="assets/document.png" alt="document" width="62" height="62" style="object-fit:contain;">
+        </div>
         <div class="icon-label">Resume.pdf</div>
       </div>
 
@@ -349,16 +361,18 @@
       <div class="sys-uptime" style="margin-top:0.2rem;">PROC <span id="sys-proc">0</span> active</div>
     </div>
 
-    <!-- RECYCLE BIN ICON -->
+    <!-- TRASH ICON -->
     <div class="icon" id="recycle-bin" data-window="recyclebin">
-      <div class="icon-img" id="bin-icon">🗑️</div>
-      <div class="icon-label">Recycle Bin</div>
+      <div class="icon-img" id="bin-icon">
+        <img id="bin-img" src="assets/trash-empty.png" alt="Trash" width="67" height="67" style="object-fit:contain; display:block;">
+      </div>
+      <div class="icon-label">Trash</div>
     </div>
 
-    <!-- RECYCLE BIN WINDOW -->
+    <!-- TRASH WINDOW -->
     <div class="window hidden" id="win-recyclebin" style="top:150px; left:200px;">
       <div class="window-titlebar">
-        <div class="window-title"><span class="title-icon">🗑️</span> Recycle Bin</div>
+        <div class="window-title"><span class="title-icon">🗑️</span> Trash</div>
         <div class="window-controls">
           <button class="win-btn minimize" data-target="win-recyclebin">_</button>
           <button class="win-btn maximize" data-target="win-recyclebin">□</button>
@@ -376,13 +390,13 @@
           font-size:0.9rem;
           color:#888899;
         ">
-          🗑️<br><br>Recycle Bin is empty
+          🗑️<br><br>Trash is empty
         </div>
         <div id="recycle-items" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
       </div>
       <div class="window-statusbar">
         <span id="bin-count">0 items</span>
-        <span id="bin-empty-btn" style="cursor:pointer; color:#cc0000;" onclick="emptyRecycleBin()">Empty Recycle Bin</span>
+        <span id="bin-empty-btn" style="cursor:pointer; color:#cc0000;" onclick="emptyRecycleBin()">Empty Trash</span>
       </div>
     </div>
 
