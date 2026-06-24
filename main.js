@@ -524,7 +524,9 @@ function makeIconDraggable(icon) {
 // ========== ICON CLICK ==========
 function initIcons() {
   const icons = document.querySelectorAll('.icon');
-  const startX = 20, startY = 20, spacingY = 160;
+  const startX = 20, startY = 20;
+  const availableHeight = window.innerHeight - 42 - startY;
+  const spacingY = Math.min(160, Math.floor(availableHeight / icons.length));
 
   icons.forEach((icon, i) => {
     icon.style.position = 'absolute';
@@ -733,7 +735,10 @@ document.addEventListener('click', hideContextMenu);
 
 function arrangeIcons() {
   const icons = document.querySelectorAll('.icon');
-  const startX = 20, startY = 20, spacingY = 160;
+  const startX = 20, startY = 20;
+  const icons2 = document.querySelectorAll('.icon');
+  const availableHeight = window.innerHeight - 42 - startY;
+  const spacingY = Math.min(160, Math.floor(availableHeight / icons2.length));
   icons.forEach((icon, i) => {
     icon.style.transition = 'top 0.3s ease, left 0.3s ease';
     icon.style.left = `${startX}px`;
