@@ -662,6 +662,53 @@ html, body {
   border-radius: 3px;
 }
 
+.project-retro-links {
+    margin-top: 1.2rem;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+
+    width: 100%;
+}
+
+.project-retro-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 34px;
+    width: 100%;
+
+    background: linear-gradient(#f8f8f8,#d9d9d9);
+
+    border: 2px solid;
+    border-top-color: #ffffff;
+    border-left-color: #ffffff;
+    border-right-color: #7a7a7a;
+    border-bottom-color: #7a7a7a;
+
+    color: #000080;
+    text-decoration: none;
+
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: bold;
+
+    transition: 0.12s;
+}
+
+.project-retro-btn:hover{
+    background: linear-gradient(#eef6ff,#c9e1ff);
+}
+
+.project-retro-btn:active{
+    border-top-color:#7a7a7a;
+    border-left-color:#7a7a7a;
+    border-right-color:#ffffff;
+    border-bottom-color:#ffffff;
+}
+
 /* ========== CONTACT ========== */
 .contact-body { display: flex; flex-direction: column; gap: 1.5rem; }
 
